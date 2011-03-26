@@ -40,7 +40,7 @@ static NSString *stringFromNonNullTerminatedString(const unsigned char *cstring,
     memcpy(nullTerminatedString, cstring, len);
     NSString *string = [NSString stringWithCString:nullTerminatedString encoding:NSUTF8StringEncoding];
     free(nullTerminatedString);
-    return string;    
+    return string;
 }
 
 static int push_hash_or_array(id self, id value) {
@@ -52,7 +52,7 @@ static int push_hash_or_array(id self, id value) {
             [self addArrayObject:value];
             break;
     }
-    
+
     return 1;
 }
 
@@ -69,7 +69,7 @@ static int push_number(void *self, const char *numberVal, unsigned int numberLen
     return push_hash_or_array(self, [NSNumber numberWithDouble:[numberString doubleValue]]);
 }
 
-static int push_string(void *self, const unsigned char *string, unsigned int len) {    
+static int push_string(void *self, const unsigned char *string, unsigned int len) {
     return push_hash_or_array(self, stringFromNonNullTerminatedString(string, len));
 }
 
@@ -87,7 +87,7 @@ static int push_map_key(void *self, const unsigned char *string, unsigned int le
 static int push_end_map(void *self) {
     yajl_bs_pop(state);
     [(id)self pop];
-    return 1;    
+    return 1;
 }
 
 static int push_start_array(void *self) {
@@ -133,7 +133,7 @@ static yajl_callbacks callbacks = {
 - (id)init {
     self = [super init];
     _stack = [[NSMutableArray alloc] init];
-    _keys = [[NSMutableArray alloc] init];    
+    _keys = [[NSMutableArray alloc] init];
     return self;
 }
 
@@ -142,7 +142,7 @@ static yajl_callbacks callbacks = {
     yajl_status stat;
     unsigned char* error = NULL;
     char buffer[1024];
-    
+
     hand = yajl_alloc(&callbacks, &cfg, NULL, self);
     yajl_bs_init(state, &(hand->alloc));
     yajl_bs_push(state, state_begin);
@@ -150,12 +150,12 @@ static yajl_callbacks callbacks = {
 
     unsigned char *input = (unsigned char *)[string UTF8String];
     unsigned int length = [string lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
-    
+
     stat = yajl_parse(hand, input, length);
     if (stat == yajl_status_ok || stat == yajl_status_insufficient_data) {
         stat = yajl_parse_complete(hand);
     }
-    
+
     if (stat != yajl_status_ok) {
         error = yajl_get_error(hand, 1, input, length);
         strncpy(buffer, (const char *)error, 1024);
@@ -168,7 +168,7 @@ static yajl_callbacks callbacks = {
         yajl_bs_free(state);
         yajl_free(hand);
     }
-    
+
     return _currentObject;
 }
 
@@ -188,7 +188,7 @@ static yajl_callbacks callbacks = {
     [_currentObject release];
     _currentObject = [[_stack lastObject] retain];
     [_stack removeLastObject];
-    
+
     if (_stack.count > 0) push_hash_or_array(self, _currentObject);
 }
 
